@@ -17,6 +17,8 @@ Finally, the classes introduced by Dynamic PyYAML enable:
 * Dynamic string resolution
 * String resolution with supplied variables
 
+Dynamic PyYAML requires PyYAML (https://bitbucket.org/xi/pyyaml).
+
 Usage
 -----
 The key feature that was introduced is the ability for a string scalar to reference other parts of the configuration tree. This is done using the Python string formatting syntax. The characters '{' and '}' enclose a reference to another entry in the configuration structure. The reference takes the form <key1>.<key2> where key1 maps to another mapping object and can be found in the root mapping, and key2 can be found in key1's mapping object.
