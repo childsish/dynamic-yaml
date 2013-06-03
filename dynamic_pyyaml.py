@@ -10,11 +10,6 @@ class YamlDictionary(OrderedDict):
             return self[key]
         return super(YamlDictionary, self).__getattribute__(key)
 
-    def __setitem__(self, key, value, PREV=0, NEXT=1,
-                    dict_setitem=dict.__setitem__):
-        super(YamlDictionary, self).__setitem__(key, convert(value), PREV,
-                                                NEXT, dict_setitem)
-    
     def update(self, other=(), **kwds):
         if isinstance(other, Mapping):
             it = ((k, other[k]) for k in other)
@@ -23,11 +18,11 @@ class YamlDictionary(OrderedDict):
         else:
             it = other
         for k, v in it:
-            if k in self and isinstance(self[k], Mapping) and\
-                             isinstance(v, Mapping):
+            if k not in self:
+                raise ValueError('Can not alter tree topology')
+            elif isinstance(self[k], Mapping) and isinstance(v, Mapping):
                 self[k].update(v)
-            elif k in self and (isinstance(self[k], dict) or
-                                isinstance(v, dict)):
+            elif isinstance(self[k], dict) or isinstance(v, dict):
                 raise ValueError('Can not alter tree topology')
             else:
                 self[k] = v
@@ -43,15 +38,6 @@ class YamlDictionary(OrderedDict):
 class YamlList(list):
     ROOT_NAME = 'root'
 
-    def __init__(self, values=[]):
-        super(YamlList, self).__init__(convert(value) for value in values)
-    
-    def __setitem__(self, key, value):
-        super(YamlList, self).__setitem__(key, convert(value))
-
-    def append(self, value):
-        super(YamlList, self).append(convert(value))
-    
     def resolve(self, lookup=None):
         lookup = {YamlList.ROOT_NAME: self} if lookup is None else lookup
         for i, v in enumerate(self):
@@ -60,14 +46,10 @@ class YamlList(list):
             elif isinstance(v, (YamlDictionary, YamlList)):
                 v.resolve(lookup)
 
-def convert(value):
-    if isinstance(value, dict) and not isinstance(value, YamlDictionary):
-        value = YamlDictionary(value)
-    elif isinstance(value, list) and not isinstance(value, YamlList):
-        value = YamlList(value)
-    return value
-
 def load(infile, lookup={}):
+    if infile.readline().strip() != '!yaml_config':
+        raise ValueError('Not a PyYAML configuration file')
+    infile.seek(0)
     data = yaml.load(infile)
     data.update(lookup)
     data.resolve()
@@ -77,13 +59,19 @@ def constructNode(loader, node):
     if isinstance(node, yaml.MappingNode):
         return constructDictionary(loader, node)
     elif isinstance(node, yaml.SequenceNode):
-        return [constructNode(loader, v) for v in node.value]
+        return constructSequence(loader, node)
     return loader.construct_scalar(node)
 
 def constructDictionary(loader, node):
     res = YamlDictionary()
     for k, v in node.value:
         res[k.value] = constructNode(loader, v)
+    return res
+
+def constructSequence(loader, node):
+    res = YamlList()
+    for v in node.value:
+        res.append(constructNode(loader, v))
     return res
 
 yaml.add_constructor(u'!yaml_config', constructDictionary)
