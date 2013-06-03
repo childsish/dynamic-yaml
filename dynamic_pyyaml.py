@@ -47,31 +47,22 @@ class YamlList(list):
                 v.resolve(lookup)
 
 def load(infile, lookup={}):
-    if infile.readline().strip() != '!yaml_config':
-        raise ValueError('Not a PyYAML configuration file')
     infile.seek(0)
     data = yaml.load(infile)
     data.update(lookup)
     data.resolve()
     return data
 
-def constructNode(loader, node):
-    if isinstance(node, yaml.MappingNode):
-        return constructDictionary(loader, node)
-    elif isinstance(node, yaml.SequenceNode):
-        return constructSequence(loader, node)
-    return loader.construct_scalar(node)
+def construct_sequence(loader, node):
+    return YamlList(loader.construct_object(child) for child in node.value)
 
-def constructDictionary(loader, node):
-    res = YamlDictionary()
-    for k, v in node.value:
-        res[k.value] = constructNode(loader, v)
-    return res
+def construct_mapping(loader, node):
+    mapping = YamlDictionary()
+    for key_node, value_node in node.value:
+        key = loader.construct_object(key_node)
+        value = loader.construct_object(value_node)
+        mapping[key] = value
+    return mapping
 
-def constructSequence(loader, node):
-    res = YamlList()
-    for v in node.value:
-        res.append(constructNode(loader, v))
-    return res
-
-yaml.add_constructor(u'!yaml_config', constructDictionary)
+yaml.add_constructor(u'tag:yaml.org,2002:seq', construct_sequence)
+yaml.add_constructor(u'tag:yaml.org,2002:map', construct_mapping)
