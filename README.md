@@ -25,7 +25,6 @@ The key feature that was introduced is the ability for a string scalar to refere
 
 An example yaml configuration:
 ```yaml
-!yaml_config
 project_name: hello-world
 dirs:
     home: /home/user
@@ -68,7 +67,6 @@ Restrictions
 
 Due to the short amount of time I was willing to spend on working upon this, there are a few restrictions required for a valid YAML configuration file.
 
-* **The first line must be the string "!yaml_config".** This is a YAML tag that tells the PyYAML loader to create a configuration object from the file.
 * **Wild card strings must be surrounded by quotes.** Braces ('{' and '}') in a YAML file usually enclose a mapping object. However, braces are also used by the Pyhton string formatting syntax to enclode a reference. As there is no way to change either of these easily, strings that contain wildcards must be explicitly declared using single or double quotes to enclose them.
-* **The root node must be key:value pairs.** I was simply too lazy to allow sequence types as the root node.
+* **Dependency resolution won't work inside sequences.** This probably wouldn't require too much more work, but I haven't needed it yet.
 * **Dependencies must be declared in the order that they are to be resolved.** This was also due to time constraints. In future, a fancy dependency resolution graph could be constructed, but at the moment, I think it works well as it is.
