@@ -1,4 +1,3 @@
-!yaml_config
 project_name: hello-world
 dirs:
     home: /home/user
