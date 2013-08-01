@@ -1,68 +1,82 @@
+import re
 import yaml
 
-from _abcoll import Mapping
-from collections import OrderedDict
+from collections import OrderedDict, Sequence, Mapping
 
-class YamlDictionary(OrderedDict):
+class YamlDict(OrderedDict):
+
+    def __init__(self, *args, **kwargs):
+        super(YamlDict, self).__init__(*args, **kwargs)
+        self.__root = self
     
     def __getattr__(self, key):
         if key in self:
             return self[key]
-        return super(YamlDictionary, self).__getattribute__(key)
-
-    def update(self, other=(), **kwds):
-        if isinstance(other, Mapping):
-            it = ((k, other[k]) for k in other)
-        elif hasattr(other, 'keys'):
-            it = ((k, other[k]) for k in other.keys())
-        else:
-            it = other
-        for k, v in it:
-            if k not in self:
-                raise ValueError('Can not alter tree topology')
-            elif isinstance(self[k], Mapping) and isinstance(v, Mapping):
-                self[k].update(v)
-            elif isinstance(self[k], dict) or isinstance(v, dict):
-                raise ValueError('Can not alter tree topology')
-            else:
-                self[k] = v
+        return super(YamlDict, self).__getattribute__(key)
     
-    def resolve(self, lookup=None):
-        lookup = self if lookup is None else lookup
+    def __getitem__(self, key):
+        v = super(YamlDict, self).__getitem__(key)
+        if isinstance(v, basestring):
+            v = v.format(**self.__root)
+        return v
+    
+    def __setitem__(self, key, value):
+        if isinstance(value, Mapping) and not isinstance(value, YamlDict):
+            value = YamlDict(value)
+        elif isinstance(value, basestring):
+            pass
+        elif isinstance(value, Sequence) and not isinstance(value, YamlList):
+            value = YamlList(value)
+        super(YamlDict, self).__setitem__(key, value)
+    
+    def setAsRoot(self, root=None):
+        if root is None:
+            root = self
+        self.__root = root
         for k, v in self.iteritems():
-            if isinstance(v, basestring):
-                self[k] = v.format(**lookup)
-            elif isinstance(v, (YamlDictionary, YamlList)):
-                v.resolve(lookup)
+            if hasattr(v, 'setAsRoot'):
+                v.setAsRoot(root)
 
 class YamlList(list):
     ROOT_NAME = 'root'
+    
+    def __init__(self, *args, **kwargs):
+        super(YamlList, self).__init__(*args, **kwargs)
+        self.__root = {YamlList.ROOT_NAME: self}
+    
+    def __getitem__(self, key):
+        v = super(YamlList, self).__getitem__(key)
+        if isinstance(v, basestring):
+            v = v.format(**self.__root)
+        return v
+    
+    def __setitem__(self, key, value):
+        if isinstance(value, Mapping) and not isinstance(value, YamlDict):
+            value = YamlDict(value)
+        elif isinstance(value, Sequence) and not isinstance(value, YamlList):
+            value = YamlList(value)
+        super(YamlList, self).__setitem__(key, value)
+    
+    def setAsRoot(self, root=None):
+        if root is None:
+            root = {YamlList.ROOT_NAME: self}
+        self.__root = root
+        for v in self:
+            if hasattr(v, 'setAsRoot'):
+                v.setAsRoot(root)
 
-    def resolve(self, lookup=None):
-        lookup = {YamlList.ROOT_NAME: self} if lookup is None else lookup
-        for i, v in enumerate(self):
-            if isinstance(v, basestring):
-                self[i] = v.format(**lookup)
-            elif isinstance(v, (YamlDictionary, YamlList)):
-                v.resolve(lookup)
-
-def load(infile, lookup={}):
+def load(infile):
+    yaml.add_constructor(u'tag:yaml.org,2002:seq', construct_sequence)
+    yaml.add_constructor(u'tag:yaml.org,2002:map', construct_mapping)
+    
     infile.seek(0)
     data = yaml.load(infile)
-    data.update(lookup)
-    data.resolve()
+    data.setAsRoot()
     return data
 
 def construct_sequence(loader, node):
     return YamlList(loader.construct_object(child) for child in node.value)
 
 def construct_mapping(loader, node):
-    mapping = YamlDictionary()
-    for key_node, value_node in node.value:
-        key = loader.construct_object(key_node)
-        value = loader.construct_object(value_node)
-        mapping[key] = value
-    return mapping
-
-yaml.add_constructor(u'tag:yaml.org,2002:seq', construct_sequence)
-yaml.add_constructor(u'tag:yaml.org,2002:map', construct_mapping)
+    make_obj = loader.construct_object
+    return YamlDict((make_obj(k), make_obj(v)) for k, v in node.value)

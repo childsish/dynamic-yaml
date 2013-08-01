@@ -52,12 +52,8 @@ Example python code reading the configuration:
 >>> cfg = load(open('cfg.yaml'))
 >>> print cfg.exes.main
 /home/user/venvs/hello-world/bin/main
->>> cfg = load(open('cfg.yaml'), {
-...     'project_name': 'goodbye',
-...     'dirs': {
-...         'home': '/home/another_user'
-...     }
-... })
+>>> cfg.project_name = 'goodbye'
+>>> cfg.dirs.home = '/home/another_user'
 >>> print cfg.exes.main
 /home/another_user/venvs/goodbye/bin/main
 ```
@@ -68,5 +64,4 @@ Restrictions
 Due to the short amount of time I was willing to spend on working upon this, there are a few restrictions required for a valid YAML configuration file.
 
 * **Wild card strings must be surrounded by quotes.** Braces ('{' and '}') in a YAML file usually enclose a mapping object. However, braces are also used by the Python string formatting syntax to enclose a reference. As there is no way to change either of these easily, strings that contain wildcards must be explicitly declared using single or double quotes to enclose them.
-* **Dependency resolution won't work inside sequences.** This probably wouldn't require too much more work, but I haven't needed it yet.
-* **Dependencies must be declared in the order that they are to be resolved.** This was also due to time constraints. In future, a fancy dependency resolution graph could be constructed, but at the moment, I think it works well as it is.
+* **Variables are always dynamically resolved.** This possibly introduces significant slow downs, but hopefully your configurtion object isn't too big anyway.

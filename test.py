@@ -3,11 +3,11 @@ from unittest import TestCase, main
 import os
 import tempfile
 
-from dynamic_pyyaml import YamlDictionary, YamlList, load
+from dynamic_pyyaml import YamlDict, YamlList, load
 
 class TestDictionary(TestCase):
     def test_simple(self):
-        res = YamlDictionary()
+        res = YamlDict()
         res['a'] = 1
         res['b'] = 2
         
@@ -18,9 +18,9 @@ class TestDictionary(TestCase):
         self.assertEquals(res.items(), [('a', 1), ('b', 2)])
     
     def test_convertDict(self):
-        res = YamlDictionary()
+        res = YamlDict()
         res['a'] = 1
-        res['b'] = YamlDictionary()
+        res['b'] = YamlDict()
         res['b']['c'] = 3
         res['b']['d'] = 4
         
@@ -32,23 +32,23 @@ class TestDictionary(TestCase):
         self.assertEquals(res.b.d, 4)
     
     def test_resolveSimple(self):
-        res = YamlDictionary()
+        res = YamlDict()
         res['project_name'] = 'hello-world'
         res['home_dir'] = '/home/user'
         res['project_dir'] = '{home_dir}/projects/{project_name}'
-        res.resolve()
+        res.setAsRoot()
         
         self.assertEquals(res.project_name, 'hello-world')
         self.assertEquals(res.home_dir, '/home/user')
         self.assertEquals(res.project_dir, '/home/user/projects/hello-world')
     
     def test_resolveNested(self):
-        res = YamlDictionary()
+        res = YamlDict()
         res['project_name'] = 'hello-world'
-        res['dirs'] = YamlDictionary()
+        res['dirs'] = YamlDict()
         res['dirs']['home_dir'] = '/home/user'
         res['dirs']['project_dir'] = '{dirs.home_dir}/projects/{project_name}'
-        res.resolve()
+        res.setAsRoot()
         
         self.assertEquals(res.project_name, 'hello-world')
         self.assertEquals(res.dirs.home_dir, '/home/user')
@@ -56,13 +56,14 @@ class TestDictionary(TestCase):
             '/home/user/projects/hello-world')
     
     def test_resolveLookup(self):
-        res = YamlDictionary()
+        res = YamlDict()
         res['project_name'] = 'hello-world'
-        res['dirs'] = YamlDictionary()
+        res['dirs'] = YamlDict()
         res['dirs']['home_dir'] = '/home/user'
         res['dirs']['project_dir'] = '{dirs.home_dir}/projects/{project_name}'
-        res.update({'dirs': {'home_dir': '/winhome/user'}})
-        res.resolve()
+        res.setAsRoot()
+        
+        res.dirs.home_dir = '/winhome/user'
         
         self.assertEquals(res.project_name, 'hello-world')
         self.assertEquals(res.dirs.home_dir, '/winhome/user')
@@ -91,7 +92,6 @@ class TestDictionary(TestCase):
 class TestList(TestCase):
     def test_resolve(self):
         res = YamlList([1, '{%s[0]}'%YamlList.ROOT_NAME])
-        res.resolve()
         
         self.assertEquals(res[0], 1)
         self.assertEquals(res[1], '1')
