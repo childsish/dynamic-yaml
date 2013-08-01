@@ -10,12 +10,11 @@ Dynamic PyYAML is a couple of classes and functions that add extra functionality
 
 In addition, the PyYAML parser provides:
 
-* Automatic type identification
+* Automatic type identification (a result of implementing the YAML standard)
 
 Finally, the classes introduced by Dynamic PyYAML enable:
 
 * Dynamic string resolution
-* String resolution with supplied variables
 
 Dynamic PyYAML requires PyYAML (https://bitbucket.org/xi/pyyaml).
 
@@ -64,4 +63,4 @@ Restrictions
 Due to the short amount of time I was willing to spend on working upon this, there are a few restrictions required for a valid YAML configuration file.
 
 * **Wild card strings must be surrounded by quotes.** Braces ('{' and '}') in a YAML file usually enclose a mapping object. However, braces are also used by the Python string formatting syntax to enclose a reference. As there is no way to change either of these easily, strings that contain wildcards must be explicitly declared using single or double quotes to enclose them.
-* **Variables are always dynamically resolved.** This possibly introduces significant slow downs, but hopefully your configurtion object isn't too big anyway.
+* **Variables are always dynamically resolved.** This possibly introduces significant slow downs, but hopefully your configuration object isn't too big anyway.
