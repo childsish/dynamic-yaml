@@ -3,7 +3,8 @@ from unittest import TestCase, main
 import os
 import tempfile
 
-from dynamic_pyyaml import YamlDict, YamlList, load
+from dynamic_yaml import YamlDict, YamlList, load
+
 
 class TestDictionary(TestCase):
     def test_simple(self):
@@ -36,7 +37,7 @@ class TestDictionary(TestCase):
         res['project_name'] = 'hello-world'
         res['home_dir'] = '/home/user'
         res['project_dir'] = '{home_dir}/projects/{project_name}'
-        res.setAsRoot()
+        res.set_as_root()
         
         self.assertEquals(res.project_name, 'hello-world')
         self.assertEquals(res.home_dir, '/home/user')
@@ -48,12 +49,11 @@ class TestDictionary(TestCase):
         res['dirs'] = YamlDict()
         res['dirs']['home_dir'] = '/home/user'
         res['dirs']['project_dir'] = '{dirs.home_dir}/projects/{project_name}'
-        res.setAsRoot()
+        res.set_as_root()
         
         self.assertEquals(res.project_name, 'hello-world')
         self.assertEquals(res.dirs.home_dir, '/home/user')
-        self.assertEquals(res.dirs.project_dir,
-            '/home/user/projects/hello-world')
+        self.assertEquals(res.dirs.project_dir, '/home/user/projects/hello-world')
     
     def test_resolveLookup(self):
         res = YamlDict()
@@ -61,14 +61,13 @@ class TestDictionary(TestCase):
         res['dirs'] = YamlDict()
         res['dirs']['home_dir'] = '/home/user'
         res['dirs']['project_dir'] = '{dirs.home_dir}/projects/{project_name}'
-        res.setAsRoot()
+        res.set_as_root()
         
         res.dirs.home_dir = '/winhome/user'
         
         self.assertEquals(res.project_name, 'hello-world')
         self.assertEquals(res.dirs.home_dir, '/winhome/user')
-        self.assertEquals(res.dirs.project_dir,
-            '/winhome/user/projects/hello-world')
+        self.assertEquals(res.dirs.project_dir, '/winhome/user/projects/hello-world')
     
     def test_orderedDictionary(self):
         fhndl, fname = tempfile.mkstemp()
@@ -77,8 +76,7 @@ class TestDictionary(TestCase):
         
         res = load(open(fname))
         
-        self.assertEquals(res.items(),
-            [(u'a', 1), (u'b', 2), (u'c', 3), (u'd', 4)])
+        self.assertEquals(res.items(), [(u'a', 1), (u'b', 2), (u'c', 3), (u'd', 4)])
     
     def test_convertList(self):
         fhndl, fname = tempfile.mkstemp()
@@ -89,9 +87,10 @@ class TestDictionary(TestCase):
         
         self.assertTrue(isinstance(res.a, YamlList))
 
+
 class TestList(TestCase):
     def test_resolve(self):
-        res = YamlList([1, '{%s[0]}'%YamlList.ROOT_NAME])
+        res = YamlList([1, '{{{}[0]}}'.format(YamlList.ROOT_NAME)])
         
         self.assertEquals(res[0], 1)
         self.assertEquals(res[1], '1')

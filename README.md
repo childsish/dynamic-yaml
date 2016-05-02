@@ -1,7 +1,11 @@
-Dynamic PyYAML
-==============
+[![Build Status](https://travis-ci.org/childsish/dynamic-yaml.svg?branch=master)](https://travis-ci.org/childsish/dynamic-yaml)
 
-Dynamic PyYAML is a couple of classes and functions that add extra functionality to YAML that turns it into a great configuration language for Python. YAML already provides:
+dynamic-yaml
+============
+
+Dynamic YAML is a couple of classes and functions that add extra functionality to YAML that turns it into a great configuration language for Python. If you prefer JSON, then see [dynamic-json][dynamic-json].
+
+YAML already provides:
 
 * A very readable and clean syntax
 * Infinitely nestable key:value pairs
@@ -12,15 +16,11 @@ In addition, the PyYAML parser provides:
 
 * Automatic type identification (a result of implementing the YAML standard)
 
-Finally, the classes introduced by Dynamic PyYAML enable:
+Finally, the classes introduced by Dynamic YAML enable:
 
 * Dynamic string resolution
 
 Dynamic PyYAML requires PyYAML (https://bitbucket.org/xi/pyyaml).
-
-Installation
-------------
-Just drop dynamic_pyyaml.py into the directory you wish to use it.
 
 Usage
 -----
@@ -40,25 +40,27 @@ dirs:
 exes:
     main: "{dirs.bin}/main"
     test: "{dirs.bin}/test"
-bases_per_chromosome:
-    - 30432563
-    - 19705359
-    - 23470805
-    - 18585042
-    - 26992728
-    - 154478
-    - 366924
 ```
-Example python code reading the configuration:
+
+Reading in a yaml file:
+
 ```python
->>> from dynamic_pyyaml import load
->>> cfg = load(open('cfg.yaml'))
->>> print cfg.exes.main
-/home/user/venvs/hello-world/bin/main
->>> cfg.project_name = 'goodbye'
->>> cfg.dirs.home = '/home/another_user'
->>> print cfg.exes.main
-/home/another_user/venvs/goodbye/bin/main
+import dynamic_yaml
+
+fileobj = open('/path/to/file.yaml')
+cfg = dynamic_yaml.load(fileobj)
+fileobj.close()
+```
+
+Now, the entry `cfg.dirs.venv` will resolve to `"/home/user/venvs/hello-world"`.
+
+Installation
+------------
+
+To install, simply run:
+
+```bash
+pip install git+https://github.com/childsish/dynamic-yaml
 ```
 
 Restrictions
@@ -68,3 +70,5 @@ Due to the short amount of time I was willing to spend on working upon this, the
 
 * **Wild card strings must be surrounded by quotes.** Braces ('{' and '}') in a YAML file usually enclose a mapping object. However, braces are also used by the Python string formatting syntax to enclose a reference. As there is no way to change either of these easily, strings that contain wildcards must be explicitly declared using single or double quotes to enclose them.
 * **Variables are always dynamically resolved.** This possibly introduces significant slow downs, but hopefully your configuration object isn't too big anyway.
+
+[dynamic-json]: https://github.com/childsish/dynamic-json
