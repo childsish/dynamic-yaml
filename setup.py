@@ -9,7 +9,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='dynamic-yaml',
-    version='1.1.3',
+    version='1.1.4',
     description='Enables self referential yaml entries',
     long_description=long_description,
     url='https://github.com/childsish/dynamic-yaml',
