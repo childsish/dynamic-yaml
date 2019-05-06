@@ -9,7 +9,7 @@ with open(path.join(here, 'README.md'), encoding='utf-8') as f:
 
 setup(
     name='dynamic-yaml',
-    version='1.1.1',
+    version='1.1.3',
     description='Enables self referential yaml entries',
     long_description=long_description,
     url='https://github.com/childsish/dynamic-yaml',
@@ -18,5 +18,11 @@ setup(
     license='MIT',
     packages=['dynamic_yaml'],
     install_requires=['pyyaml'],
+    extras_require={
+        'dev': [
+            'twine',
+            'wheel'
+        ]
+    },
     keywords='development yaml configuration'
 )

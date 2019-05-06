@@ -2,4 +2,5 @@
 build
 dist
 dynamic_yaml.egg-info
+venv
 *.pyc

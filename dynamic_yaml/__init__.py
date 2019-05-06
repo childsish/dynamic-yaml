@@ -1,13 +1,12 @@
 import yaml
 
-from yaml_wrappers import YamlDict, YamlList
+from .yaml_wrappers import YamlDict, YamlList
 
 
 def load(infile):
-    yaml.add_constructor(u'tag:yaml.org,2002:seq', construct_sequence)
-    yaml.add_constructor(u'tag:yaml.org,2002:map', construct_mapping)
-
-    data = yaml.load(infile)
+    yaml.FullLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_SEQUENCE_TAG, construct_sequence)
+    yaml.FullLoader.add_constructor(yaml.resolver.BaseResolver.DEFAULT_MAPPING_TAG, construct_mapping)
+    data = yaml.load(infile, Loader=yaml.FullLoader)
     data.set_as_root()
     return data
 

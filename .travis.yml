@@ -1,7 +1,16 @@
 language: python
 python:
-  - "2.7"
+  - "3.7"
 install:
   python setup.py install
 script:
-  python -m unittest discover
+  python -m unittest discover -s tests
+deploy:
+  provider: pypi
+  user: childsish
+  password:
+    secure: BJg0b1taCp/9Q+W59OYPHMERGSMKCF2i0u9uiHM3Q11pyC7Uh5nFQ0ScWUrQ5qLtg6aAFqoSruD2yxzbYYwdt2hBChlt/B5k5Mx3B/UH0fZiSFLnQf4zaz+1TjKLKZKOph/Erg/92I3NQXJIdg+mgmZ7wfzCWuxyts3kIJHRru+hOoP7bLdyDVV9wArZyuzEuG03p6a11HFgdVdcZZeTGPW3TouR0GtlInUeJpjJhnpTqKT/jkASyWBYnToHRvxiPlmeMZr+/7u50t/VoqUFAU9lyEMzKYhTN3xIyJzv+NxTCLOz+ebfejN1p3HuTGMW9/1eYUgj7kPMLwtdi1c/5ZpvxJH5f0jaXc0e1D+jyBWSqrHywhJDBalWPcUTaV28odtlNywPYxvhi7X+XK9nk7REZlzATGXMw2mBMSr4sCucS2EzAkp4uWQe9FOxP9otYvFmYq89qgjqs8a3ecRGki6NOBH9CAZxb+pijvg5T8JAUloxuoO4pIOyNehFKwrUlSDJZjt6yGNdPkcSdKbeNDyt6XwRIYzrNF/W5uxKVDrWDsLHnTEX68J7f3ddKdVnNRjovILDij04JKHGRco9RgTId23Q+vwYiNmSoZv8w3DJBrWLl2qzI3cPkuwMQokwyNFq24WjEwcKr+0WfPr7uWJB737iMvGXDtMqUV7N+U8=
+  on:
+    tags: true
+    distributions: sdist bdist_wheel
+    repo: childsish/dynamic-yaml

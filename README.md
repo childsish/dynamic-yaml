@@ -47,9 +47,8 @@ Reading in a yaml file:
 ```python
 import dynamic_yaml
 
-fileobj = open('/path/to/file.yaml')
-cfg = dynamic_yaml.load(fileobj)
-fileobj.close()
+with open('/path/to/file.yaml') as fileobj:
+    cfg = dynamic_yaml.load(fileobj)
 ```
 
 Now, the entry `cfg.dirs.venv` will resolve to `"/home/user/venvs/hello-world"`.
