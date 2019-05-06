@@ -39,7 +39,7 @@ dirs:
     databases: "{dirs.data}/databases"
 exes:
     main: "{dirs.bin}/main"
-    test: "{dirs.bin}/test"
+    test: tests
 ```
 
 Reading in a yaml file:
