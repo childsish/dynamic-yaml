@@ -3,7 +3,8 @@ from unittest import TestCase, main
 import os
 import tempfile
 
-from dynamic_yaml import YamlDict, YamlList, load
+from dynamic_yaml import load
+from dynamic_yaml.yaml_wrappers import YamlDict, YamlList
 
 
 class TestDictionary(TestCase):
