@@ -1,100 +1,68 @@
 from unittest import TestCase, main
 
-import os
-import tempfile
-
 from dynamic_yaml import load
-from dynamic_yaml.yaml_wrappers import YamlDict, YamlList
 
 
-class TestDictionary(TestCase):
-    def test_simple(self):
-        res = YamlDict()
-        res['a'] = 1
-        res['b'] = 2
-        
-        self.assertEqual(res['a'], 1)
-        self.assertEqual(res['b'], 2)
-        self.assertEqual(res.a, 1)
-        self.assertEqual(res.b, 2)
-        self.assertEqual(list(res.items()), [('a', 1), ('b', 2)])
+class TestLoad(TestCase):
+    def test_dict(self):
+        config = '''
+        a: 1
+        b: 2
+        c: 'a'
+        '''
+        res = load(config)
+        self.assertDictEqual({'a': 1, 'b': 2, 'c': 'a'}, res)
     
-    def test_convertDict(self):
-        res = YamlDict()
-        res['a'] = 1
-        res['b'] = YamlDict()
-        res['b']['c'] = 3
-        res['b']['d'] = 4
-        
-        self.assertEqual(res['a'], 1)
-        self.assertEqual(res['b']['c'], 3)
-        self.assertEqual(res['b']['d'], 4)
-        self.assertEqual(res.a, 1)
-        self.assertEqual(res.b.c, 3)
-        self.assertEqual(res.b.d, 4)
+    def test_nested_dict(self):
+        config = '''
+        a: 1
+        b: 
+          c: 3
+          d: 4
+          e: 'a'
+        '''
+        res = load(config)
+        self.assertDictEqual({'a': 1, 'b': {'c': 3, 'd': 4, 'e': 'a'}}, res)
     
-    def test_resolveSimple(self):
-        res = YamlDict()
-        res['project_name'] = 'hello-world'
-        res['home_dir'] = '/home/user'
-        res['project_dir'] = '{home_dir}/projects/{project_name}'
-        res.set_as_root()
+    def test_resolve_simple(self):
+        config = '''
+        project_name: hello-world
+        home_dir: /home/user
+        project_dir: '{home_dir}/projects/{project_name}'
+        '''
+        res = load(config)
         
-        self.assertEqual(res.project_name, 'hello-world')
-        self.assertEqual(res.home_dir, '/home/user')
-        self.assertEqual(res.project_dir, '/home/user/projects/hello-world')
+        self.assertEqual('hello-world', res.project_name)
+        self.assertEqual('/home/user', res.home_dir)
+        self.assertEqual('/home/user/projects/hello-world', res.project_dir)
     
-    def test_resolveNested(self):
-        res = YamlDict()
-        res['project_name'] = 'hello-world'
-        res['dirs'] = YamlDict()
-        res['dirs']['home_dir'] = '/home/user'
-        res['dirs']['project_dir'] = '{dirs.home_dir}/projects/{project_name}'
-        res.set_as_root()
+    def test_resolve_nested(self):
+        config = '''
+        project_name: hello-world
+        dirs: 
+          home_dir: /home/user
+          project_dir: '{dirs.home_dir}/projects/{project_name}'
+        '''
+        res = load(config)
         
-        self.assertEqual(res.project_name, 'hello-world')
-        self.assertEqual(res.dirs.home_dir, '/home/user')
-        self.assertEqual(res.dirs.project_dir, '/home/user/projects/hello-world')
+        self.assertEqual('hello-world', res.project_name)
+        self.assertEqual('/home/user', res.dirs.home_dir)
+        self.assertEqual('/home/user/projects/hello-world', res.dirs.project_dir)
     
-    def test_resolveLookup(self):
-        res = YamlDict()
-        res['project_name'] = 'hello-world'
-        res['dirs'] = YamlDict()
-        res['dirs']['home_dir'] = '/home/user'
-        res['dirs']['project_dir'] = '{dirs.home_dir}/projects/{project_name}'
-        res.set_as_root()
-        
+    def test_resolve_simple_update(self):
+        config = '''
+        project_name: hello-world
+        dirs: 
+          home_dir: /home/user
+          project_dir: '{dirs.home_dir}/projects/{project_name}'
+        '''
+        res = load(config)
+        self.assertEqual('hello-world', res.project_name)
+        self.assertEqual('/home/user', res.dirs.home_dir)
+        self.assertEqual('/home/user/projects/hello-world', res.dirs.project_dir)
+
         res.dirs.home_dir = '/winhome/user'
-        
-        self.assertEqual(res.project_name, 'hello-world')
-        self.assertEqual(res.dirs.home_dir, '/winhome/user')
-        self.assertEqual(res.dirs.project_dir, '/winhome/user/projects/hello-world')
-    
-    def test_orderedDictionary(self):
-        fhndl, fname = tempfile.mkstemp()
-        os.write(fhndl, 'a: 1\nb: 2\nc: 3\nd: 4\n'.encode('utf-8'))
-        os.close(fhndl)
-
-        with open(fname) as fileobj:
-            res = load(fileobj)
-            self.assertEqual(list(res.items()), [(u'a', 1), (u'b', 2), (u'c', 3), (u'd', 4)])
-    
-    def test_convertList(self):
-        fhndl, fname = tempfile.mkstemp()
-        os.write(fhndl, 'a: [1, 2, 3]\n'.encode('utf-8'))
-        os.close(fhndl)
-
-        with open(fname) as fileobj:
-            res = load(fileobj)
-            self.assertTrue(isinstance(res.a, YamlList))
-
-
-class TestList(TestCase):
-    def test_resolve(self):
-        res = YamlList([1, '{{{}[0]}}'.format(YamlList.ROOT_NAME)])
-        
-        self.assertEqual(res[0], 1)
-        self.assertEqual(res[1], '1')
+        self.assertEqual('/winhome/user/projects/hello-world', res.dirs.project_dir)
 
 
 if __name__ == '__main__':
