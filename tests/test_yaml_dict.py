@@ -1,3 +1,4 @@
+from argparse import ArgumentParser
 from unittest import TestCase, main
 
 from dynamic_yaml import load
@@ -8,7 +9,7 @@ class TestYamlDict(TestCase):
         config = '''
         a: 1
         b: 2
-        c: 'a'
+        c: a
         '''
         res = load(config)
         self.assertDictEqual({'a': 1, 'b': 2, 'c': 'a'}, res)
@@ -42,7 +43,7 @@ class TestYamlDict(TestCase):
         config = '''
         project_name: hello-world
         home_dir: /home/user
-        project_dir: '{home_dir}/projects/{project_name}'
+        project_dir: {home_dir}/projects/{project_name}
         '''
         res = load(config)
         
@@ -55,7 +56,7 @@ class TestYamlDict(TestCase):
         project_name: hello-world
         dirs: 
           home_dir: /home/user
-          project_dir: '{dirs.home_dir}/projects/{project_name}'
+          project_dir: {dirs.home_dir}/projects/{project_name}
         '''
         res = load(config)
         
@@ -68,8 +69,8 @@ class TestYamlDict(TestCase):
         project_name: hello-world
         dirs: 
           home_dir: /home/user
-          project_dir: '{dirs.home_dir}/projects/{project_name}'
-          tool1_output_dir: '{dirs.project_dir}/tool1-{parameters.tool1.phase1.subparameter1}-{parameters.tool1.phase1.subparameter2}'
+          project_dir: {dirs.home_dir}/projects/{project_name}
+          tool1_output_dir: {dirs.project_dir}/tool1-{parameters.tool1.phase1.subparameter1}-{parameters.tool1.phase1.subparameter2}
         parameters:
           tool1:
             phase1:
@@ -85,7 +86,7 @@ class TestYamlDict(TestCase):
         project_name: hello-world
         dirs: 
           home_dir: /home/user
-          project_dir: '{dirs.home_dir}/projects/{project_name}'
+          project_dir: {dirs.home_dir}/projects/{project_name}
         '''
         res = load(config)
         self.assertEqual('hello-world', res.project_name)
@@ -100,7 +101,7 @@ class TestYamlDict(TestCase):
         project_name: hello-world
         dirs: 
           home_dir: /home/user
-          project_dir: '{dirs.home_dir}/projects/{project_name}'
+          project_dir: {dirs.home_dir}/projects/{project_name}
         '''
         res = load(config)
 
@@ -115,6 +116,22 @@ class TestYamlDict(TestCase):
                          'items': '{dirs.database_dir}/items.sqlite'}
         self.assertEqual('/home/user/projects/hello-world/databases/customers.sqlite', res.databases.customers)
         self.assertEqual('/home/user/projects/hello-world/databases/items.sqlite', res.databases['items'])
+
+    def test_argparse(self):
+        config = '''
+        output_dir: 'output-{parameters.parameter1}-{parameters.parameter2}'
+        parameters:
+          parameter1: a
+          parameter2: b
+        '''
+        res = load(config)
+        self.assertEqual('output-a-b', res.output_dir)
+
+        parser = ArgumentParser()
+        parser.add_argument('--parameter1')
+        parser.add_argument('--parameter2')
+        parser.parse_args(('--parameter1', 'c', '--parameter2', 'd'), namespace=res.parameters)
+        self.assertEqual('output-c-d', res.output_dir)
 
 
 if __name__ == '__main__':

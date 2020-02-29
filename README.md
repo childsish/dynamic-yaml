@@ -37,9 +37,13 @@ dirs:
     errors: "{dirs.data}/errors"
     sessions: "{dirs.data}/sessions"
     databases: "{dirs.data}/databases"
+    output: "{dirs.data}/output-{parameters.parameter1}"
 exes:
     main: "{dirs.bin}/main"
     test: tests
+parameters:
+    parameter1: a
+    parameter2: b
 ```
 
 Reading in a yaml file:
@@ -49,9 +53,23 @@ import dynamic_yaml
 
 with open('/path/to/file.yaml') as fileobj:
     cfg = dynamic_yaml.load(fileobj)
+    assert cfg.dirs.venv == '/home/user/venvs/hello-world'
+    assert cfg.dirs.output == '/home/user/venvs/hello-world/data/output-a-b'
 ```
 
-Now, the entry `cfg.dirs.venv` will resolve to `"/home/user/venvs/hello-world"`.
+As the variables are dynamically resolved, it is also possible to combine this with `argparse`:
+
+```python
+import dynamic_yaml
+
+from argparse import ArgumentParser
+
+with open('/path/to/file.yaml') as fileobj:
+    cfg = dynamic_yaml.load(fileobj)
+    parser = ArgumentParser()
+    parser.parse_args('--parameter1 c --parameter2 d'.split(), namespace=cfg.parameters)
+    assert cfg.dirs.output == '/home/user/venvs/hello-world/data/output-c-d'
+```
 
 Installation
 ------------
@@ -65,11 +83,19 @@ pip install dynamic-yaml
 Restrictions
 ------------
 
-Due to the short amount of time I was willing to spend on working upon this, there are a few restrictions required for a valid YAML configuration file.
+Due to the short amount of time I was willing to spend on working upon this, there are a few restrictions that I could not overcome.
 
-* **Wild card strings must be surrounded by quotes.** Braces ('{' and '}') in a YAML file usually enclose a mapping object. However, braces are also used by the Python string formatting syntax to enclose a reference. As there is no way to change either of these easily, strings that contain wildcards must be explicitly declared using single or double quotes to enclose them.
-* **Variables are always dynamically resolved.** This possibly introduces significant slow downs, but hopefully your configuration object isn't too big anyway.
-* **Certain keys can only be used via `__getitem__` and not `__getattr__`.** Because `dict` comes with it's own set of attributes that are always resolved first, the values for the following keys must be gotten using the item getter rather than the attribute getter (eg. config['items'] vs. config.items):
+* **Wild card strings must sometimes be surrounded by quotes.**
+Braces ('{' and '}') in a YAML file usually enclose a mapping object.
+However, braces are also used by the Python string formatting syntax to enclose a reference.
+As there is no way to change either of these easily, strings that look like a yaml mapping must be explicitly declared using single or double quotes to enclose them.
+For example:
+  ```yaml
+  quotes_needed: '{variable}'
+  no_quotes_needed: {variable1}-{variable2}
+  ```
+* **Certain keys can only be used via `__getitem__` and not `__getattr__`.**
+Because `dict` comes with it's own set of attributes that are always resolved first, the values for the following keys must be gotten using the item getter rather than the attribute getter (eg. config['items'] vs. config.items):
   * append
   * extend
   * insert
