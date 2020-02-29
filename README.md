@@ -69,5 +69,17 @@ Due to the short amount of time I was willing to spend on working upon this, the
 
 * **Wild card strings must be surrounded by quotes.** Braces ('{' and '}') in a YAML file usually enclose a mapping object. However, braces are also used by the Python string formatting syntax to enclose a reference. As there is no way to change either of these easily, strings that contain wildcards must be explicitly declared using single or double quotes to enclose them.
 * **Variables are always dynamically resolved.** This possibly introduces significant slow downs, but hopefully your configuration object isn't too big anyway.
+* **Certain keys can only be used via `__getitem__` and not `__getattr__`.** Because `dict` comes with it's own set of attributes that are always resolved first, the values for the following keys must be gotten using the item getter rather than the attribute getter (eg. config['items'] vs. config.items):
+  * append
+  * extend
+  * insert
+  * remove
+  * pop
+  * clear
+  * index
+  * count
+  * sort
+  * reverse
+  * copy 
 
 [dynamic-json]: https://github.com/childsish/dynamic-json
