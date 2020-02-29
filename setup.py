@@ -9,7 +9,8 @@ def get_root_path():
 
 
 def get_version():
-    return Popen(['git', 'describe', '--tags', '--dirty'], stdout=PIPE, cwd=get_root_path()).communicate()[0]
+    stdout = Popen(['git', 'describe', '--tags', '--dirty'], stdout=PIPE, cwd=get_root_path()).communicate()[0]
+    return stdout.strip().decode('utf-8')
 
 
 def read_file(filename):
