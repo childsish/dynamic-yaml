@@ -37,7 +37,7 @@ dirs:
     errors: "{dirs.data}/errors"
     sessions: "{dirs.data}/sessions"
     databases: "{dirs.data}/databases"
-    output: "{dirs.data}/output-{parameters.parameter1}"
+    output: "{dirs.data}/output-{parameters.parameter1}-{parameters.parameter2}"
 exes:
     main: "{dirs.bin}/main"
     test: tests
@@ -67,6 +67,8 @@ from argparse import ArgumentParser
 with open('/path/to/file.yaml') as fileobj:
     cfg = dynamic_yaml.load(fileobj)
     parser = ArgumentParser()
+    parser.add_argument('--parameter1')
+    parser.add_argument('--parameter2')
     parser.parse_args('--parameter1 c --parameter2 d'.split(), namespace=cfg.parameters)
     assert cfg.dirs.output == '/home/user/venvs/hello-world/data/output-c-d'
 ```
