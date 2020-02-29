@@ -3,7 +3,7 @@ from unittest import TestCase, main
 from dynamic_yaml import load
 
 
-class TestLoad(TestCase):
+class TestYamlDict(TestCase):
     def test_dict(self):
         config = '''
         a: 1
@@ -23,6 +23,20 @@ class TestLoad(TestCase):
         '''
         res = load(config)
         self.assertDictEqual({'a': 1, 'b': {'c': 3, 'd': 4, 'e': 'a'}}, res)
+
+    def test_deeply_nested_dict(self):
+        config = '''
+        a: 1
+        b: 
+          c: 2
+          d: 3
+          e:
+            f: 4
+            g:
+              h: 5
+        '''
+        res = load(config)
+        self.assertDictEqual({'a': 1, 'b': {'c': 2, 'd': 3, 'e': {'f': 4, 'g': {'h': 5}}}}, res)
     
     def test_resolve_simple(self):
         config = '''
@@ -48,6 +62,23 @@ class TestLoad(TestCase):
         self.assertEqual('hello-world', res.project_name)
         self.assertEqual('/home/user', res.dirs.home_dir)
         self.assertEqual('/home/user/projects/hello-world', res.dirs.project_dir)
+
+    def test_resolve_deeply_nested(self):
+        config = '''
+        project_name: hello-world
+        dirs: 
+          home_dir: /home/user
+          project_dir: '{dirs.home_dir}/projects/{project_name}'
+          tool1_output_dir: '{dirs.project_dir}/tool1-{parameters.tool1.phase1.subparameter1}-{parameters.tool1.phase1.subparameter2}'
+        parameters:
+          tool1:
+            phase1:
+              subparameter1: 0.5
+              subparameter2: 1.6666
+        '''
+        res = load(config)
+
+        self.assertEqual('/home/user/projects/hello-world/tool1-0.5-1.6666', res.dirs.tool1_output_dir)
     
     def test_resolve_simple_update(self):
         config = '''
