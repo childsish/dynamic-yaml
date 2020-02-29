@@ -25,9 +25,7 @@ class YamlDict(dict):
         if isinstance(value, Mapping) and not isinstance(value, YamlDict):
             value = YamlDict(value)
             value.set_as_root(super().__getattribute__('_root'))
-        elif isinstance(value, str):
-            pass
-        elif isinstance(value, Sequence) and not isinstance(value, YamlList):
+        elif isinstance(value, Sequence) and not isinstance(value, (str, YamlList)):
             value = YamlList(value)
             value.set_as_root(super().__getattribute__('_root'))
         super().__setitem__(key, value)
@@ -57,9 +55,7 @@ class YamlList(list):
         if isinstance(value, Mapping) and not isinstance(value, YamlDict):
             value = YamlDict(value)
             value.set_as_root(super().__getattribute__('_root'))
-        elif isinstance(value, str):
-            pass
-        elif isinstance(value, Sequence) and not isinstance(value, YamlList):
+        elif isinstance(value, Sequence) and not isinstance(value, (str, YamlList)):
             value = YamlList(value)
             value.set_as_root(super().__getattribute__('_root'))
         super().__setitem__(key, value)
