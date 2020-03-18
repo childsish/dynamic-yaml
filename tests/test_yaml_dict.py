@@ -38,25 +38,35 @@ class TestYamlDict(TestCase):
         '''
         res = load(config)
         self.assertDictEqual({'a': 1, 'b': {'c': 2, 'd': 3, 'e': {'f': 4, 'g': {'h': 5}}}}, res)
-    
+
     def test_resolve_simple(self):
         config = '''
         project_name: hello-world
         home_dir: /home/user
-        project_dir: {home_dir}/projects/{project_name}
+        project_dir: "{home_dir}/projects/{project_name}"
         '''
         res = load(config)
-        
+
         self.assertEqual('hello-world', res.project_name)
         self.assertEqual('/home/user', res.home_dir)
         self.assertEqual('/home/user/projects/hello-world', res.project_dir)
+
+    def test_resolve_missing(self):
+        config = '''
+        project_name: hello-world
+        home_dir: /home/user
+        project_dir: "{missing_dir}/projects/{project_name}"
+        '''
+        res = load(config)
+
+        self.assertRaises(KeyError, lambda: res.project_dir)
     
     def test_resolve_nested(self):
         config = '''
         project_name: hello-world
         dirs: 
           home_dir: /home/user
-          project_dir: {dirs.home_dir}/projects/{project_name}
+          project_dir: "{dirs.home_dir}/projects/{project_name}"
         '''
         res = load(config)
         
@@ -69,8 +79,8 @@ class TestYamlDict(TestCase):
         project_name: hello-world
         dirs: 
           home_dir: /home/user
-          project_dir: {dirs.home_dir}/projects/{project_name}
-          tool1_output_dir: {dirs.project_dir}/tool1-{parameters.tool1.phase1.subparameter1}-{parameters.tool1.phase1.subparameter2}
+          project_dir: "{dirs.home_dir}/projects/{project_name}"
+          tool1_output_dir: "{dirs.project_dir}/tool1-{parameters.tool1.phase1.subparameter1}-{parameters.tool1.phase1.subparameter2}"
         parameters:
           tool1:
             phase1:
@@ -86,7 +96,7 @@ class TestYamlDict(TestCase):
         project_name: hello-world
         dirs: 
           home_dir: /home/user
-          project_dir: {dirs.home_dir}/projects/{project_name}
+          project_dir: "{dirs.home_dir}/projects/{project_name}"
         '''
         res = load(config)
         self.assertEqual('hello-world', res.project_name)
@@ -101,11 +111,9 @@ class TestYamlDict(TestCase):
         project_name: hello-world
         dirs: 
           home_dir: /home/user
-          project_dir: {dirs.home_dir}/projects/{project_name}
+          project_dir: "{dirs.home_dir}/projects/{project_name}"
         '''
         res = load(config)
-
-        print(res.items)
 
         self.assertEqual('hello-world', res.project_name)
         self.assertEqual('/home/user', res.dirs.home_dir)
@@ -132,6 +140,16 @@ class TestYamlDict(TestCase):
         parser.add_argument('--parameter2')
         parser.parse_args(('--parameter1', 'c', '--parameter2', 'd'), namespace=res.parameters)
         self.assertEqual('output-c-d', res.output_dir)
+
+    def test_recursive(self):
+        config = '''
+        prefix: /opt/ml
+        input_path: "{prefix}/input"
+        training_data_path: '{input_path}/data/training'
+        '''
+
+        res = load(config, recursive=True)
+        self.assertEqual('/opt/ml/input/data/training', res.training_data_path)
 
 
 if __name__ == '__main__':

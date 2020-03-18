@@ -25,7 +25,7 @@ def add_wrappers(loader: Type[DynamicYamlLoader]):
 add_wrappers(DynamicYamlLoader)
 
 
-def load(stream, loader=DynamicYamlLoader):
+def load(stream, loader=DynamicYamlLoader, recursive=False):
     result = yaml.load(stream, Loader=loader)
-    result.set_as_root()
+    result.set_as_root(recursive=recursive)
     return result
