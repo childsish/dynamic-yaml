@@ -87,14 +87,13 @@ Restrictions
 
 Due to the short amount of time I was willing to spend on working upon this, there are a few restrictions that I could not overcome.
 
-* **Wild card strings must sometimes be surrounded by quotes.**
+* **Wild card strings must be surrounded by quotes.**
 Braces ('{' and '}') in a YAML file usually enclose a mapping object.
 However, braces are also used by the Python string formatting syntax to enclose a reference.
 As there is no way to change either of these easily, strings that look like a yaml mapping must be explicitly declared using single or double quotes to enclose them.
 For example:
   ```yaml
   quotes_needed: '{variable}'
-  no_quotes_needed: {variable1}-{variable2}
   ```
 * **Certain keys can only be used via `__getitem__` and not `__getattr__`.**
 Because `dict` comes with it's own set of attributes that are always resolved first, the values for the following keys must be gotten using the item getter rather than the attribute getter (eg. config['items'] vs. config.items):
