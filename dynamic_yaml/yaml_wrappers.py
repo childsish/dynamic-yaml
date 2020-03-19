@@ -1,14 +1,62 @@
 import re
 
-from collections import Sequence, Mapping
+from collections.abc import Collection, Mapping, MutableMapping, MutableSequence, Sequence
 
 
-class YamlDict(dict):
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        super().__setattr__('_root', self)
+class DynamicYamlObject(Collection):
+    def __init__(self):
+        super().__setattr__('_collection', {})
+        super().__setattr__('_root', {})
         super().__setattr__('_recursive', False)
         super().__setattr__('_regx', re.compile('.*{.*}.*'))
+
+    def __iter__(self):
+        yield from super().__getattribute__('_collection')
+
+    def __contains__(self, value: object) -> bool:
+        return value in super().__getattribute__('_collection')
+
+    def __len__(self) -> int:
+        return len(super().__getattribute__('_collection'))
+
+    def __getitem__(self, key):
+        value = super().__getattribute__('_collection')[key]
+        if isinstance(value, str):
+            while super().__getattribute__('_regx').match(value) is not None:
+                value = value.format(**super().__getattribute__('_root')._collection)
+                if not super().__getattribute__('_recursive'):
+                    break
+        return value
+
+    def __setitem__(self, key, value):
+        if isinstance(value, Mapping) and not isinstance(value, YamlDict):
+            value = YamlDict(value)
+            value._set_as_root(super().__getattribute__('_root'))
+        elif isinstance(value, Sequence) and not isinstance(value, (str, YamlList)):
+            value = YamlList(value)
+            value._set_as_root(super().__getattribute__('_root'))
+        super().__getattribute__('_collection')[key] = value
+
+    def __delitem__(self, key):
+        del super().__getattribute__('_collection')[key]
+
+    def _values(self):
+        raise NotImplementedError('This method must be implemented in the child class')
+
+    def _set_as_root(self, root=None, *, recursive=False):
+        super().__setattr__('_recursive', recursive)
+        if root is not None:
+            super().__setattr__('_root', root)
+        for value in self._values():
+            if isinstance(value, DynamicYamlObject):
+                value._set_as_root(super().__getattribute__('_root'), recursive=recursive)
+
+
+class YamlDict(DynamicYamlObject, MutableMapping):
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        super().__setattr__('_collection', dict(*args, **kwargs))
+        super().__setattr__('_root', self)
 
     def __getattr__(self, key):
         if key in self:
@@ -18,64 +66,20 @@ class YamlDict(dict):
     def __setattr__(self, key, value):
         self[key] = value
 
-    def __getitem__(self, key):
-        v = super().__getitem__(key)
-        if isinstance(v, str):
-            while self._regx.match(v) is not None:
-                v = v.format(**super().__getattribute__('_root'))
-                if not self._recursive:
-                    break
-        return v
-
-    def __setitem__(self, key, value):
-        if isinstance(value, Mapping) and not isinstance(value, YamlDict):
-            value = YamlDict(value)
-            value.set_as_root(super().__getattribute__('_root'))
-        elif isinstance(value, Sequence) and not isinstance(value, (str, YamlList)):
-            value = YamlList(value)
-            value.set_as_root(super().__getattribute__('_root'))
-        super().__setitem__(key, value)
-
-    def set_as_root(self, root=None, *, recursive=False):
-        super().__setattr__('_recursive', recursive)
-        if root is not None:
-            super().__setattr__('_root', root)
-        for k, v in self.items():
-            if hasattr(v, 'set_as_root'):
-                v.set_as_root(super().__getattribute__('_root'), recursive=recursive)
+    def _values(self):
+        return super().__getattribute__('_collection').values()
 
 
-class YamlList(list):
+class YamlList(DynamicYamlObject, MutableSequence):
     ROOT_NAME = 'root'
 
     def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
+        super().__init__()
+        super().__setattr__('_collection', list(*args, **kwargs))
         super().__setattr__('_root', {YamlList.ROOT_NAME: self})
-        super().__setattr__('_recursive', False)
-        super().__setattr__('_regx', re.compile('.*{.*}.*'))
 
-    def __getitem__(self, key):
-        v = super().__getitem__(key)
-        if isinstance(v, str):
-            while self._regx.match(v) is not None:
-                v = v.format(**super().__getattribute__('_root'))
-                if not self._recursive:
-                    break
-        return v
+    def insert(self, index: int, object):
+        super().__getattribute__('_collection').insert(index, object)
 
-    def __setitem__(self, key, value):
-        if isinstance(value, Mapping) and not isinstance(value, YamlDict):
-            value = YamlDict(value)
-            value.set_as_root(super().__getattribute__('_root'))
-        elif isinstance(value, Sequence) and not isinstance(value, (str, YamlList)):
-            value = YamlList(value)
-            value.set_as_root(super().__getattribute__('_root'))
-        super().__setitem__(key, value)
-
-    def set_as_root(self, root=None, *, recursive=False):
-        super().__setattr__('_recursive', recursive)
-        if root is not None:
-            super().__setattr__('_root', root)
-        for v in self:
-            if hasattr(v, 'set_as_root'):
-                v.set_as_root(super().__getattribute__('_root'), recursive=recursive)
+    def _values(self):
+        return super().__getattribute__('_collection')

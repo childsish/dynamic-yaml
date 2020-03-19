@@ -12,7 +12,9 @@ class TestYamlDict(TestCase):
         c: a
         '''
         res = load(config)
-        self.assertDictEqual({'a': 1, 'b': 2, 'c': 'a'}, res)
+        self.assertEqual(1, res.a)
+        self.assertEqual(2, res.b)
+        self.assertEqual('a', res.c)
     
     def test_nested_dict(self):
         config = '''
@@ -23,7 +25,10 @@ class TestYamlDict(TestCase):
           e: 'a'
         '''
         res = load(config)
-        self.assertDictEqual({'a': 1, 'b': {'c': 3, 'd': 4, 'e': 'a'}}, res)
+        self.assertEqual(1, res.a)
+        self.assertEqual(3, res.b.c)
+        self.assertEqual(4, res.b.d)
+        self.assertEqual('a', res.b.e)
 
     def test_deeply_nested_dict(self):
         config = '''
@@ -37,7 +42,11 @@ class TestYamlDict(TestCase):
               h: 5
         '''
         res = load(config)
-        self.assertDictEqual({'a': 1, 'b': {'c': 2, 'd': 3, 'e': {'f': 4, 'g': {'h': 5}}}}, res)
+        self.assertEqual(1, res.a)
+        self.assertEqual(2, res.b.c)
+        self.assertEqual(3, res.b.d)
+        self.assertEqual(4, res.b.e.f)
+        self.assertEqual(5, res.b.e.g.h)
 
     def test_resolve_simple(self):
         config = '''
@@ -144,12 +153,27 @@ class TestYamlDict(TestCase):
     def test_recursive(self):
         config = '''
         prefix: /opt/ml
-        input_path: "{prefix}/input"
+        input_path: '{prefix}/input'
         training_data_path: '{input_path}/data/training'
         '''
 
         res = load(config, recursive=True)
+        self.assertEqual('/opt/ml/input', res.input_path)
         self.assertEqual('/opt/ml/input/data/training', res.training_data_path)
+
+    def test_keyword_args(self):
+        config = '''
+        prefix: /opt/ml
+        input_path: '{prefix}/input'
+        training_data_path: '{input_path}/data/training'
+        '''
+
+        def inner_test(input_path, training_data_path, **kwargs):
+            self.assertEqual('/opt/ml/input', input_path)
+            self.assertEqual('/opt/ml/input/data/training', training_data_path)
+
+        res = load(config, recursive=True)
+        inner_test(**res)
 
 
 if __name__ == '__main__':
