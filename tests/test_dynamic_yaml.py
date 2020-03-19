@@ -16,6 +16,17 @@ class TestDynamicYaml(TestCase):
         self.assertEqual('b', res[1])
         self.assertEqual('c', res[2])
 
+    def test_list_resolution(self):
+        config = '''
+        - a
+        - b
+        - '{root[0]}'
+        '''
+        res = load(config)
+        self.assertEqual('a', res[0])
+        self.assertEqual('b', res[1])
+        self.assertEqual('a', res[2])
+
     def test_dict(self):
         config = '''
         a: 1
