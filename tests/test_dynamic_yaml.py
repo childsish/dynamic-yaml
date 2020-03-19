@@ -4,7 +4,18 @@ from unittest import TestCase, main
 from dynamic_yaml import load
 
 
-class TestYamlDict(TestCase):
+class TestDynamicYaml(TestCase):
+    def test_list(self):
+        config = '''
+        - a
+        - b
+        - c
+        '''
+        res = load(config)
+        self.assertEqual('a', res[0])
+        self.assertEqual('b', res[1])
+        self.assertEqual('c', res[2])
+
     def test_dict(self):
         config = '''
         a: 1
