@@ -73,6 +73,34 @@ with open('/path/to/file.yaml') as fileobj:
     assert cfg.dirs.output == '/home/user/venvs/hello-world/data/output-c-d'
 ```
 
+Writing yaml will resolve all references:
+
+```python
+import dynamic_yaml
+import yaml
+
+with open('/path/to/file.yaml') as fileobj:
+    cfg = dynamic_yaml.load(fileobj)
+    assert yaml.safe_load(dynamic_yaml.dump(cfg)) == yaml.safe_load('''
+project_name: hello-world
+dirs:
+    home: /home/user
+    venv: /home/user/venvs/hello-world
+    bin: /home/user/venvs/hello-world/bin
+    data: /home/user/venvs/hello-world/data
+    errors: /home/user/venvs/hello-world/data/errors
+    sessions: /home/user/venvs/hello-world/data/sessions
+    databases: /home/user/venvs/hello-world/data/databases
+    output: /home/user/venvs/hello-world/data/output-a-b}
+exes:
+    main: /home/user/venvs/hello-world/bin/main
+    test: tests
+parameters:
+  - 0.5
+  - 0.1
+''')
+```
+
 Installation
 ------------
 

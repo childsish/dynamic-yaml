@@ -13,7 +13,7 @@ def read_file(filename):
 
 setup(
     name='dynamic-yaml',
-    version='1.2.3',
+    version='1.2.4',
     description='Enables self referential yaml entries',
     long_description=read_file('README.md'),
     long_description_content_type='text/markdown',
@@ -23,7 +23,7 @@ setup(
     license='MIT',
     packages=['dynamic_yaml'],
     python_requires='>=3.0',
-    install_requires=['pyyaml==5.3.1'],
+    install_requires=['pyyaml>=5.4'],
     extras_require={
         'dev': [
             'twine',
