@@ -23,7 +23,7 @@ setup(
     license='MIT',
     packages=['dynamic_yaml'],
     python_requires='>=3.0',
-    install_requires=['pyyaml==5.3.1'],
+    install_requires=['pyyaml>=5.4'],
     extras_require={
         'dev': [
             'twine',
