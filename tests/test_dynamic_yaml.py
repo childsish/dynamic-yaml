@@ -197,6 +197,34 @@ class TestDynamicYaml(TestCase):
         res = load(config, recursive=True)
         inner_test(**res)
 
+    def test_list_iteration(self):
+        config = '''
+        targets:
+          v1: value1
+          v2: value2
+        query:
+          - '{targets.v1}'
+          - '{targets.v2}'
+        '''
+
+        res = load(config)
+        self.assertEqual(['value1', 'value2'], list(res.query))
+
+    def test_dict_iteration(self):
+        config = '''
+        targets:
+          v1: value1
+          v2: value2
+        query:
+          v1: '{targets.v1}'
+          v2: '{targets.v2}'
+        '''
+
+        res = load(config)
+        self.assertEqual(['v1', 'v2'], list(res.query))
+        self.assertEqual(['value1', 'value2'], list(res.query.values()))
+        self.assertEqual([('v1', 'value1'), ('v2', 'value2')], list(res.query.items()))
+
 
 if __name__ == '__main__':
     import sys

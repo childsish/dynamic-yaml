@@ -78,6 +78,10 @@ class YamlList(DynamicYamlObject, MutableSequence):
         super().__setattr__('_collection', list(*args, **kwargs))
         super().__setattr__('_root', YamlDict([(YamlList.ROOT_NAME, self)]))
 
+    def __iter__(self):
+        for i in range(len(self)):
+            yield self[i]
+
     def insert(self, index: int, object):
         super().__getattribute__('_collection').insert(index, object)
 
