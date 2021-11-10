@@ -24,7 +24,13 @@ Dynamic PyYAML requires PyYAML (https://bitbucket.org/xi/pyyaml).
 
 Usage
 -----
-The key feature that was introduced is the ability for a string scalar to reference other parts of the configuration tree. This is done using the Python string formatting syntax. The characters '{' and '}' enclose a reference to another entry in the configuration structure. The reference takes the form key1.key2 where key1 maps to another mapping object and can be found in the root mapping, and key2 can be found in key1's mapping object. Multiple levels of nesting can be used (eg. key1.key2.key3 etc...).
+
+The key feature that was introduced is the ability for a string scalar to reference other parts of the configuration tree.
+This is done using the Python string formatting syntax.
+The characters '{' and '}' enclose a reference to another entry in the configuration structure.
+The reference takes the form key1.key2 where key1 maps to another mapping object and can be found in the root mapping, and key2 can be found in key1's mapping object.
+Multiple levels of nesting can be used (eg. key1.key2.key3 etc...).
+If you need brace literals, they can be escaped by doubling them up, as described by the Python format string [documentation](https://docs.python.org/3/library/string.html#formatstrings). 
 
 An example yaml configuration:
 ```yaml
