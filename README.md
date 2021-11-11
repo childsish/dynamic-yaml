@@ -1,4 +1,4 @@
-[![Build Status](https://travis-ci.org/childsish/dynamic-yaml.svg?branch=master)](https://travis-ci.org/childsish/dynamic-yaml)
+![](https://github.com/childsish/dynamic-yaml/workflows/Project%20Tests/badge.svg)
 
 dynamic-yaml
 ============

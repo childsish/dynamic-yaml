@@ -3,7 +3,7 @@ on: push
 jobs:
   build-n-publish:
     name: Build and publish to TestPyPI or PyPI
-    runs-on: ubuntu-18.04
+    runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@main
     - name: Set up Python 3.9
