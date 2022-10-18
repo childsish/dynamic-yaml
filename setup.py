@@ -13,7 +13,7 @@ def read_file(filename):
 
 setup(
     name='dynamic-yaml',
-    version='1.3.1',
+    version='1.3.2',
     description='Enables self referential yaml entries',
     long_description=read_file('README.md'),
     long_description_content_type='text/markdown',
