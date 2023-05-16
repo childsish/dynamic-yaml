@@ -37,6 +37,21 @@ class TestDynamicYaml(TestCase):
         self.assertEqual(1, res.a)
         self.assertEqual(2, res.b)
         self.assertEqual('a', res.c)
+
+        del res['a']
+        self.assertNotIn('a', res)
+        self.assertFalse(hasattr(res, 'a'))
+        self.assertEqual(2, res.b)
+        self.assertEqual('a', res.c)
+
+        del res.b
+        self.assertNotIn('b', res)
+        self.assertFalse(hasattr(res, 'b'))
+        self.assertEqual('a', res.c)
+
+        delattr(res, 'c')
+        self.assertNotIn('c', res)
+        self.assertFalse(hasattr(res, 'c'))
     
     def test_nested_dict(self):
         config = '''

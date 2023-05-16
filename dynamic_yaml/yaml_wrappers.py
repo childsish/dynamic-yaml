@@ -66,6 +66,9 @@ class YamlDict(DynamicYamlObject, MutableMapping):
     def __setattr__(self, key, value):
         self[key] = value
 
+    def __delattr__(self, key):
+        del self[key]
+
     def _values(self):
         return super().__getattribute__('_collection').values()
 
