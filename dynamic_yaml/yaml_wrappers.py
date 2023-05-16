@@ -8,7 +8,7 @@ class DynamicYamlObject(Collection):
         super().__setattr__('_collection', {})
         super().__setattr__('_root', {})
         super().__setattr__('_recursive', False)
-        super().__setattr__('_regx', re.compile('.*{.*}.*'))
+        super().__setattr__('_regx', re.compile('.*{.*}.*', re.DOTALL))
 
     def __iter__(self):
         yield from super().__getattribute__('_collection')

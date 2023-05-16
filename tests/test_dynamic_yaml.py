@@ -239,6 +239,21 @@ class TestDynamicYaml(TestCase):
         self.assertEqual(['v1', 'v2'], list(res.query))
         self.assertEqual(['value1', 'value2'], list(res.query.values()))
         self.assertEqual([('v1', 'value1'), ('v2', 'value2')], list(res.query.items()))
+    
+    def test_multiline(self):
+        config = '''
+a:
+ a1: x
+ a2: y
+b:
+ b1: |
+  line1
+  line2 {a.a1}
+ b2: line1 line2 {a.a2}
+'''
+        res = load(config)
+        self.assertEqual('line1 line2 y', res.b.b2)
+        self.assertEqual('line1\nline2 x\n', res.b.b1)
 
 
 if __name__ == '__main__':
