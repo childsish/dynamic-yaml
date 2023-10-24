@@ -255,6 +255,17 @@ b:
         self.assertEqual('line1 line2 y', res.b.b2)
         self.assertEqual('line1\nline2 x\n', res.b.b1)
 
+    def test_merge_keys(self):
+        config = '''
+        a: &a
+          b: 1
+        c:
+          <<: *a
+        '''
+
+        res = load(config)
+        self.assertEqual(res.c.b, 1)
+
 
 if __name__ == '__main__':
     import sys
