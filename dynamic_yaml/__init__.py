@@ -12,10 +12,10 @@ class DynamicYamlLoader(yaml.FullLoader):
 def add_wrappers(loader: Type[DynamicYamlLoader]):
     from .yaml_wrappers import DynamicYamlObject, YamlDict, YamlList
 
-    def _construct_dynamic_dict(loader_: DynamicYamlLoader, node: yaml.MappingNode):
+    def _construct_dynamic_dict(loader_: DynamicYamlLoader, node: yaml.MappingNode) -> YamlDict:
         return YamlDict(((loader_.construct_object(key), loader_.construct_object(value)) for key, value in node.value))
 
-    def _construct_dynamic_list(loader_: DynamicYamlLoader, node):
+    def _construct_dynamic_list(loader_: DynamicYamlLoader, node: yaml.SequenceNode) -> YamlList:
         return YamlList((loader_.construct_object(child) for child in node.value))
 
     def _represent_dynamic_dict(dumper: yaml.BaseDumper, data: YamlDict):
