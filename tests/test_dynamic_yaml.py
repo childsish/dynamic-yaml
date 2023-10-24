@@ -242,15 +242,15 @@ class TestDynamicYaml(TestCase):
     
     def test_multiline(self):
         config = '''
-a:
- a1: x
- a2: y
-b:
- b1: |
-  line1
-  line2 {a.a1}
- b2: line1 line2 {a.a2}
-'''
+        a:
+         a1: x
+         a2: y
+        b:
+         b1: |
+          line1
+          line2 {a.a1}
+         b2: line1 line2 {a.a2}
+        '''
         res = load(config)
         self.assertEqual('line1 line2 y', res.b.b2)
         self.assertEqual('line1\nline2 x\n', res.b.b1)
@@ -258,13 +258,18 @@ b:
     def test_merge_keys(self):
         config = '''
         a: &a
-          b: 1
+          b: value1
+          f: '{d.e}'
         c:
           <<: *a
+        d: 
+          e: value2
         '''
 
         res = load(config)
-        self.assertEqual(res.c.b, 1)
+        self.assertEqual('value1', res.c.b)
+        self.assertEqual('value2', res.a.f)
+        self.assertEqual('value2', res.c.f)
 
 
 if __name__ == '__main__':
