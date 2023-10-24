@@ -13,6 +13,7 @@ def add_wrappers(loader: Type[DynamicYamlLoader]):
     from .yaml_wrappers import DynamicYamlObject, YamlDict, YamlList
 
     def _construct_dynamic_dict(loader_: DynamicYamlLoader, node: yaml.MappingNode) -> YamlDict:
+        loader_.flatten_mapping(node)
         return YamlDict(((loader_.construct_object(key), loader_.construct_object(value)) for key, value in node.value))
 
     def _construct_dynamic_list(loader_: DynamicYamlLoader, node: yaml.SequenceNode) -> YamlList:
