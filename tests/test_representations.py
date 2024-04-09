@@ -34,6 +34,34 @@ parameters: {tool1: {phase1: {subparameters: [0.5, 0.6]}, phase2: {subparameters
 project_name: hello-world'''),
             yaml.safe_load(dump(res)))
 
+    def test_insert_order_keys(self):
+        config = '''
+        one: 1
+        two: 2
+        three: 3
+        four: 4
+        five: 5
+        '''
+
+        self.assertEqual(
+            dump(load(config)),
+            'one: 1\ntwo: 2\nthree: 3\nfour: 4\nfive: 5\n'
+        )
+
+    def test_sorted_keys(self):
+        config = '''
+        one: 1
+        two: 2
+        three: 3
+        four: 4
+        five: 5
+        '''
+
+        self.assertEqual(
+            dump(load(config), sort_keys=True),
+            'five: 5\nfour: 4\none: 1\nthree: 3\ntwo: 2\n'
+        )
+
 
 if __name__ == '__main__':
     import sys
