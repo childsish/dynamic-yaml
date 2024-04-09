@@ -37,8 +37,8 @@ def load(stream, loader=DynamicYamlLoader, recursive=False):
     return result
 
 
-def dump(data, *args, **kwargs):
-    return yaml.dump(data, *args, **kwargs)
+def dump(data, sort_keys=False, *args, **kwargs):
+    return yaml.dump(data, sort_keys=sort_keys, *args, **kwargs)
 
 
 add_wrappers(DynamicYamlLoader)
